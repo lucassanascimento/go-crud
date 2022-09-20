@@ -61,3 +61,40 @@ func DeleteProduct(id string) {
 	deleteQuery.Exec(id)
 	defer db.Close()
 }
+
+func GetProduct(id string) Product {
+	db := db.DbConnect()
+
+	productQuery, err := db.Query("SELECT * FROM products WHERE id=$1", id)
+	uteis.CheckIfExisteError(err)
+
+	productToUpdate := Product{}
+
+	for productQuery.Next() {
+		var id, quantity int
+		var name, description string
+		var price float64
+
+		err = productQuery.Scan(&id, &name, &description, &price, &quantity)
+		uteis.CheckIfExisteError(err)
+
+		productToUpdate.Id = id
+		productToUpdate.Name = name
+		productToUpdate.Description = description
+		productToUpdate.Price = price
+		productToUpdate.Quantity = quantity
+	}
+
+	defer db.Close()
+	return productToUpdate
+}
+
+func Update(id int, name string, description string, price float64, quantity int) {
+	db := db.DbConnect()
+
+	updateQuery, err := db.Prepare("UPDATE products SET name=$1, description=$2, price=$3, quantity=$4 WHERE id=$5")
+	uteis.CheckIfExisteError(err)
+
+	updateQuery.Exec(name, description, price, quantity, id)
+	defer db.Close()
+}

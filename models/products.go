@@ -30,6 +30,7 @@ func GetProducts() []Product {
 		err = productsQuery.Scan(&id, &name, &description, &price, &quantity)
 		uteis.CheckIfExisteError(err)
 
+		p.Id = id
 		p.Name = name
 		p.Description = description
 		p.Price = price
@@ -48,5 +49,15 @@ func CreateProduct(name string, description string, price float64, quantity int)
 	uteis.CheckIfExisteError(err)
 
 	insertQuery.Exec(name, description, price, quantity)
+	defer db.Close()
+}
+
+func DeleteProduct(id string) {
+	db := db.DbConnect()
+
+	deleteQuery, err := db.Prepare("DELETE FROM products WHERE id=$1")
+	uteis.CheckIfExisteError(err)
+
+	deleteQuery.Exec(id)
 	defer db.Close()
 }
